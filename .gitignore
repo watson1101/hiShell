@@ -1,0 +1,59 @@
+# ============================================================
+# hiShell - Git 忽略规则
+# 说明：build/ 下的图标、manifest、info.json 等是源码资源，
+#      只忽略真正生成/下载的内容。
+# ============================================================
+
+# ---------- Go 编译产物 ----------
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# ---------- Wails 应用构建产物 ----------
+build/bin/
+# 交叉编译输出目录（如 build/darwin/、build/linux/）
+build/darwin*/
+build/linux*/
+
+# ---------- 前端依赖与构建产物 ----------
+frontend/node_modules/
+frontend/dist/
+# Wails 依赖变更检测缓存（自动生成）
+frontend/package.json.md5
+# 注：frontend/wailsjs/ 是 Wails 生成的 Go 绑定，但提交进仓库可让前端开箱即用，
+#     故不忽略；Go 接口变更后 wails build / wails dev 会自动重新生成。
+
+# ---------- 本地工具与临时文件 ----------
+.tools/
+*.tmp
+*.bak
+
+# ---------- 凭据 / 本地敏感数据（保险规则） ----------
+# 实际存放在用户配置目录（Windows: %AppData%\hiShell），
+# 以下规则防止误将本地副本提交
+.masterkey
+*.enc
+sessions.json
+
+# ---------- 日志 ----------
+*.log
+
+# ---------- 编辑器 / IDE ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------- 操作系统文件 ----------
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini

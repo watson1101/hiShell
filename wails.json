@@ -1,0 +1,20 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "hiShell",
+  "outputfilename": "hiShell",
+  "frontend:install": "pnpm install --frozen-lockfile=false",
+  "frontend:build": "pnpm build",
+  "frontend:dev:watcher": "pnpm dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "hongw",
+    "email": ""
+  },
+  "license": "MIT",
+  "info": {
+    "companyName": "hiShell",
+    "productName": "hiShell",
+    "productVersion": "0.1.0",
+    "copyright": "Copyright © 2026 hiShell"
+  }
+}
