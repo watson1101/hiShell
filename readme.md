@@ -9,6 +9,7 @@
 ## 功能特性
 
 ### 连接与终端
+
 - 用户名 / 密码、私钥（含 passphrase）两种认证方式
 - 完整交互式 PTY 终端（xterm.js，支持 256 色、UTF-8 / GBK 切换）
 - 新建 / 编辑会话时可「测试连接」，只做 TCP + SSH 握手认证，不启动 shell
@@ -16,12 +17,14 @@
 - 终端尺寸自适应，ResizeObserver 同步远端 PTY
 
 ### 文件管理（SFTP）
+
 - FinalShell 风格左侧目录树（懒加载、自动展开并高亮当前路径）
 - 拖拽上传、系统对话框上传文件 / 目录、递归上传下载
 - 新建 / 删除目录，传输进度实时显示
 - 起始路径 `~` 自动展开为家目录
 
 ### 服务器监控
+
 - FinalShell 风格常驻侧栏：系统信息、负载、CPU / 内存 / 交换、网络实时曲线、磁盘挂载点
 - 进程 Top（按 RSS 排序，显示真实内存占用与 CPU 百分比）
 - 每 2 秒通过 SSH 重新采集并推送，Linux / macOS 命令分支已适配
@@ -29,6 +32,7 @@
 > 说明：进程 CPU 列采用 `ps -eo pcpu`，即进程**自启动以来的平均值**；常驻进程 RSS 内存也基本稳定，因此这两列短时间内变化不明显，属于指标口径特性，并非数据未刷新。
 
 ### 其他
+
 - 多服务器批量命令：并发下发、分服务器展示输出与耗时、快捷命令预设
 - 会话分组、收藏、搜索、增删改，配置本地 JSON 持久化
 - 凭据优先存系统钥匙串，不可用时降级为 AES-256-GCM 加密文件
@@ -38,14 +42,14 @@
 
 ## 技术栈
 
-| 层次 | 技术 |
-|------|------|
+| 层次     | 技术                                                                             |
+| -------- | -------------------------------------------------------------------------------- |
 | 桌面框架 | Wails v2.10.2（系统 WebView：Windows WebView2 / macOS WebKit / Linux WebKitGTK） |
-| 后端 | Go 1.23、`golang.org/x/crypto/ssh`、`github.com/pkg/sftp` |
-| 前端 | React 18 + TypeScript + Vite 6 |
-| 终端 | xterm.js 5 + FitAddon + WebLinksAddon |
-| 状态管理 | Zustand |
-| 凭据存储 | go-keyring + 本地 AES 降级 |
+| 后端     | Go 1.23、`golang.org/x/crypto/ssh`、`github.com/pkg/sftp`                        |
+| 前端     | React 18 + TypeScript + Vite 6                                                   |
+| 终端     | xterm.js 5 + FitAddon + WebLinksAddon                                            |
+| 状态管理 | Zustand                                                                          |
+| 凭据存储 | go-keyring + 本地 AES 降级                                                       |
 
 ---
 
@@ -77,13 +81,13 @@ hiShell/
 
 ## 环境要求
 
-| 依赖 | 版本要求 | 备注 |
-|------|----------|------|
-| Go | ≥ 1.23 | Wails v2.10 不认识旧版 toolchain 指令 |
-| Node.js | ≥ 20 | 本机使用 Node 22 |
-| pnpm | 已安装 | 需允许 esbuild 构建脚本（见下方） |
-| Wails CLI | v2.10.2 | `go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2` |
-| WebView2 Runtime | Windows 需预装 | Win11 一般自带 |
+| 依赖             | 版本要求       | 备注                                                        |
+| ---------------- | -------------- | ----------------------------------------------------------- |
+| Go               | ≥ 1.23         | Wails v2.10 不认识旧版 toolchain 指令                       |
+| Node.js          | ≥ 20           | 本机使用 Node 22                                            |
+| pnpm             | 已安装         | 需允许 esbuild 构建脚本（见下方）                           |
+| Wails CLI        | v2.10.2        | `go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2` |
+| WebView2 Runtime | Windows 需预装 | Win11 一般自带                                              |
 
 ---
 
@@ -166,12 +170,12 @@ export GOPROXY=https://goproxy.cn,direct
 
 ### 公共前置依赖（三端均需）
 
-| 依赖 | 版本要求 | 说明 |
-|------|----------|------|
-| Go | ≥ 1.23 | Wails v2.10 不认识旧版 `toolchain` 指令 |
-| Node.js | ≥ 20 | 本项目使用 Node 22 |
-| pnpm | 任意新版 | 需放行 esbuild 构建脚本（见「快速开始」） |
-| Wails CLI | v2.10.2 | `go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2`，确保 `~/go/bin`（Windows 为 `%USERPROFILE%\go\bin`）在 PATH 中 |
+| 依赖      | 版本要求 | 说明                                                                                                                        |
+| --------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Go        | ≥ 1.23   | Wails v2.10 不认识旧版 `toolchain` 指令                                                                                     |
+| Node.js   | ≥ 20     | 本项目使用 Node 22                                                                                                          |
+| pnpm      | 任意新版 | 需放行 esbuild 构建脚本（见「快速开始」）                                                                                   |
+| Wails CLI | v2.10.2  | `go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2`，确保 `~/go/bin`（Windows 为 `%USERPROFILE%\go\bin`）在 PATH 中 |
 
 每个平台首次构建前，先安装前端依赖并确认环境：
 
@@ -185,6 +189,7 @@ wails doctor        # 检查该平台缺失的构建依赖，按提示补齐
 ### 一、Windows 编译
 
 **编译环境**
+
 - Windows 10 / 11（amd64 或 arm64，本项目已在 amd64 验证）
 - 上述公共依赖（Go、Node、pnpm、Wails CLI）
 - **WebView2 Runtime**：Win11 默认自带，Win10 可能需手动安装；用 `wails doctor` 检查
@@ -200,8 +205,6 @@ wails build -platform windows/amd64
 **最终产物**：`build/bin/hiShell.exe`（约 11 MB，单文件，绿色免安装）
 
 **运行环境要求**：Windows 10 / 11 + WebView2 Runtime。双击即可运行，无需管理员权限。
-
-> 注意：本机系统 Go 1.20.4 过旧，需先切换到缓存的 Go 1.23.4 工具链（见上文「快速开始」第 4 点）。
 
 ---
 
@@ -235,6 +238,7 @@ wails build -platform linux/amd64
 **最终产物**：`build/bin/hiShell`（无扩展名的 ELF 可执行文件）。如需 deb / AppImage / rpm 包，可在 `build/linux/` 下配置 nfpm 或 AppImage 脚本后再构建。
 
 **运行环境要求**：
+
 - 带图形桌面的 Linux（X11 或 Wayland），且已安装 WebKitGTK 运行库：
   - GTK3 栈：`libgtk-3-0`、`libwebkit2gtk-4.0-37`（Ubuntu 24.04+ 为 `libwebkit2gtk-4.1-0`）
 - 无图形界面或缺少 WebKitGTK 的环境（如纯服务器、精简容器）无法启动。
@@ -247,6 +251,7 @@ wails build -platform linux/amd64
 > Wails v2 **不支持从 Windows / Linux 交叉编译到 macOS**（需 macOS SDK 与 Objective-C 工具链）。必须在 Mac 或 CI 的 macOS runner 上构建。
 
 **编译环境**
+
 - macOS 11+（Apple Silicon / arm64）或 macOS 10.13+（Intel / amd64）
 - Xcode 命令行工具：`xcode-select --install`（验证：`xcode-select -p` 应输出 `/Library/Developer/CommandLineTools`）
 - 上述公共依赖（Go、Node、pnpm、Wails CLI）
@@ -270,11 +275,11 @@ wails build -platform darwin/universal   # 通用包（同时支持两种芯片�
 
 ### 交叉编译与自动化建议
 
-| 目标 | 能否在 Windows 本机编译 | 推荐方式 |
-|------|------------------------|----------|
-| Windows | ✅ 可以 | 本机直接构建 |
-| Linux | ❌ 不建议（CGO 依赖 GTK/WebKitGTK 头文件） | 在 Linux 本机 / WSL / Docker 交叉镜像中构建 |
-| macOS | ❌ 不可以 | 必须 Mac 或 CI macOS runner |
+| 目标    | 能否在 Windows 本机编译                   | 推荐方式                                    |
+| ------- | ----------------------------------------- | ------------------------------------------- |
+| Windows | ✅ 可以                                    | 本机直接构建                                |
+| Linux   | ❌ 不建议（CGO 依赖 GTK/WebKitGTK 头文件） | 在 Linux 本机 / WSL / Docker 交叉镜像中构建 |
+| macOS   | ❌ 不可以                                  | 必须 Mac 或 CI macOS runner                 |
 
 正式发版建议使用 **GitHub Actions 三平台 matrix**，在每个平台的原生 runner 上分别构建并上传 Release 资产，避免交叉编译的环境问题。
 
