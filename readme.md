@@ -160,13 +160,123 @@ export GOPROXY=https://goproxy.cn,direct
 - 断点续传、会话导入导出、端口转发等高级特性暂未实现。
 - 会话栏与监控栏宽度目前固定，仅终端 / 文件区域高度可调。
 
-### 跨平台构建说明
+## 三端编译与运行环境
 
-源码本身跨平台，但 **Wails v2 依赖 CGO 与平台原生 WebView，不能在当前 Windows 机器一次编出三平台包**：
+> **前置说明**：源码本身完全跨平台（SSH / SFTP 为纯 Go 实现，仅在系统监控处按 `uname` 分支）。但 **Wails v2 依赖 CGO 与各平台原生 WebView（Windows WebView2 / macOS WebKit / Linux WebKitGTK），无法在单一平台上交叉编译出全部三端包**。必须在目标平台本机或其 CI runner 上原生构建。
 
-- **Windows**：已验证，直接 `wails build -platform windows/amd64`。
-- **Linux**：需在 Linux 环境（如 WSL 安装 `libgtk-3-dev`、`libwebkit2gtk-4.1-dev` + Go 1.23 + Node）中执行 `wails build -platform linux/amd64`；运行机器需安装 WebKitGTK。
-- **macOS**：Wails v2 官方不支持从 Windows / Linux 交叉编译，需 Mac 或 CI macOS runner（Xcode CLT）执行 `wails build -platform darwin/arm64`（或 `darwin/universal`），产物为 `.app`，对外分发需签名与公证。
+### 公共前置依赖（三端均需）
+
+| 依赖 | 版本要求 | 说明 |
+|------|----------|------|
+| Go | ≥ 1.23 | Wails v2.10 不认识旧版 `toolchain` 指令 |
+| Node.js | ≥ 20 | 本项目使用 Node 22 |
+| pnpm | 任意新版 | 需放行 esbuild 构建脚本（见「快速开始」） |
+| Wails CLI | v2.10.2 | `go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2`，确保 `~/go/bin`（Windows 为 `%USERPROFILE%\go\bin`）在 PATH 中 |
+
+每个平台首次构建前，先安装前端依赖并确认环境：
+
+```bash
+cd frontend && pnpm install && cd ..
+wails doctor        # 检查该平台缺失的构建依赖，按提示补齐
+```
+
+---
+
+### 一、Windows 编译
+
+**编译环境**
+- Windows 10 / 11（amd64 或 arm64，本项目已在 amd64 验证）
+- 上述公共依赖（Go、Node、pnpm、Wails CLI）
+- **WebView2 Runtime**：Win11 默认自带，Win10 可能需手动安装；用 `wails doctor` 检查
+- 可选：NSIS（仅生成安装包时需要，直接发 exe 可跳过）
+
+**构建命令**
+
+```bash
+wails build -platform windows/amd64
+# 或 ARM64：wails build -platform windows/arm64
+```
+
+**最终产物**：`build/bin/hiShell.exe`（约 11 MB，单文件，绿色免安装）
+
+**运行环境要求**：Windows 10 / 11 + WebView2 Runtime。双击即可运行，无需管理员权限。
+
+> 注意：本机系统 Go 1.20.4 过旧，需先切换到缓存的 Go 1.23.4 工具链（见上文「快速开始」第 4 点）。
+
+---
+
+### 二、Linux 编译
+
+**编译环境**（以 Debian / Ubuntu 为例）
+
+```bash
+sudo apt update
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+```
+
+- Fedora / RHEL：`sudo dnf install gcc pkg-config gtk3-devel webkit2gtk4.0-devel`
+- Arch / Manjaro：`sudo pacman -S base-devel gtk3 webkit2gtk`
+- **Ubuntu 24.04+ / Debian 13+**：`libwebkit2gtk-4.0-dev` 已移除，改安装 `libwebkit2gtk-4.1-dev`，并在构建时加 tag：
+
+```bash
+sudo apt install build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
+wails build -platform linux/amd64 -tags webkit2_41
+```
+
+> 也可直接在 WSL 中编译：把项目放到 WSL 文件系统内（不要放在 `/mnt/c`，跨文件系统编译 CGO 会非常慢），按上面安装依赖后构建。
+
+**构建命令**
+
+```bash
+wails build -platform linux/amd64
+# 或 ARM64：wails build -platform linux/arm64
+```
+
+**最终产物**：`build/bin/hiShell`（无扩展名的 ELF 可执行文件）。如需 deb / AppImage / rpm 包，可在 `build/linux/` 下配置 nfpm 或 AppImage 脚本后再构建。
+
+**运行环境要求**：
+- 带图形桌面的 Linux（X11 或 Wayland），且已安装 WebKitGTK 运行库：
+  - GTK3 栈：`libgtk-3-0`、`libwebkit2gtk-4.0-37`（Ubuntu 24.04+ 为 `libwebkit2gtk-4.1-0`）
+- 无图形界面或缺少 WebKitGTK 的环境（如纯服务器、精简容器）无法启动。
+- NVIDIA 专有驱动若出现白屏，运行前设置 `WEBKIT_DISABLE_DMABUF_RENDERER=1`。
+
+---
+
+### 三、macOS 编译
+
+> Wails v2 **不支持从 Windows / Linux 交叉编译到 macOS**（需 macOS SDK 与 Objective-C 工具链）。必须在 Mac 或 CI 的 macOS runner 上构建。
+
+**编译环境**
+- macOS 11+（Apple Silicon / arm64）或 macOS 10.13+（Intel / amd64）
+- Xcode 命令行工具：`xcode-select --install`（验证：`xcode-select -p` 应输出 `/Library/Developer/CommandLineTools`）
+- 上述公共依赖（Go、Node、pnpm、Wails CLI）
+- WebKit 由 macOS 系统自带，无需额外安装
+
+**构建命令**
+
+```bash
+wails build -platform darwin/arm64       # Apple Silicon
+wails build -platform darwin/amd64       # Intel
+wails build -platform darwin/universal   # 通用包（同时支持两种芯片）
+```
+
+**最终产物**：`build/bin/hiShell.app`（应用包目录，分发时整体压缩为 zip / dmg）
+
+**运行环境要求**：macOS 11+（arm64）或 10.13+（amd64），系统自带 WebKit。
+
+> **分发提示**：本机自签名即可自己运行；对外分发必须申请 Apple Developer ID 签名并做公证（notarization），否则会被 Gatekeeper 拦截，用户需手动右键打开。
+
+---
+
+### 交叉编译与自动化建议
+
+| 目标 | 能否在 Windows 本机编译 | 推荐方式 |
+|------|------------------------|----------|
+| Windows | ✅ 可以 | 本机直接构建 |
+| Linux | ❌ 不建议（CGO 依赖 GTK/WebKitGTK 头文件） | 在 Linux 本机 / WSL / Docker 交叉镜像中构建 |
+| macOS | ❌ 不可以 | 必须 Mac 或 CI macOS runner |
+
+正式发版建议使用 **GitHub Actions 三平台 matrix**，在每个平台的原生 runner 上分别构建并上传 Release 资产，避免交叉编译的环境问题。
 
 ---
 
